@@ -5,7 +5,7 @@ export const createPeer = () => {
   return new Peer(uuidv4(), {
     host: 'peerjs.com',
     port: 443,
-    path: '',
+    path: '/peerjs',
     secure: true
   });
 };
