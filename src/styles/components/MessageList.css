@@ -1,0 +1,27 @@
+.message-list {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.message-list .message {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+}
+
+.message-list .message:last-child {
+  border-bottom: none;
+}
+
+.message-list .message .message-content {
+  margin-left: 10px;
+}
+
+.message-list .message .message-avatar {
+  margin-right: 10px;
+}

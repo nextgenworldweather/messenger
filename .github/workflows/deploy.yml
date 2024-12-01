@@ -1,0 +1,91 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      
+      # Clean install with explicit dependencies
+      - name: Install Dependencies
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install 
+
+          npm install clsx react-draggable tailwind-merge core-js core-js-pure moment is-retina charenc is-buffer emoji-mart --save
+          
+          # Install dev dependencies explicitly
+          npm install -D @vitejs/plugin-react vite @types/react @types/react-dom gh-pages tailwindcss @tailwindcss/forms autoprefixer postcss mocha webpack
+          
+          # Install runtime dependencies explicitly
+          npm install react-toastify firebase peerjs uuid lucide-react @mui/material @emotion/react @emotion/styled
+          
+          # Install react-avatar with necessary peer dependency
+          npm install react-avatar prop-types --save vite-plugin-commonjs --save-dev
+
+          npm install vite@latest emoji-mart@latest --save-dev emoji-picker-react
+      
+      # Generate config files
+      - name: Generate Config Files
+        run: |
+          cat > postcss.config.js << 'EOL'
+          module.exports = {
+            plugins: {
+              tailwindcss: {},
+              autoprefixer: {},
+            }
+          };
+          EOL
+
+          cat > tailwind.config.js << 'EOL'
+          module.exports = {
+            content: [
+              './src/**/*.{js,jsx,ts,tsx}',
+              './index.html',
+            ],
+            theme: {
+              extend: {},
+            },
+            plugins: [
+              require('@tailwindcss/forms')({
+                strategy: 'class',
+              }),
+            ],
+          };
+          EOL
+      
+      # Build with error handling and increased memory limit
+      - name: Build
+        run: |
+          npm run build || (echo "Build failed" && exit 1)
+      
+      # Upload for GitHub Pages
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
